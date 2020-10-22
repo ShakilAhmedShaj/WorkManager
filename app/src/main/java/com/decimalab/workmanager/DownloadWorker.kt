@@ -3,6 +3,7 @@ package com.decimalab.workmanager
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
@@ -18,7 +19,7 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters) :
         connection.doInput = true
         connection.connect()
 
-        val imagePath = "shajt3ch.jpg"
+        val imagePath = "shajt3ch_${System.currentTimeMillis()}.jpg"
         val inputStream = connection.inputStream
         val file = File(applicationContext.externalMediaDirs.first(), imagePath)
 
@@ -38,7 +39,9 @@ class DownloadWorker(context: Context, workerParameters: WorkerParameters) :
 
             output.flush()
         }
-        return Result.success()
+        val output = workDataOf("image_path" to file.absolutePath)
+
+        return Result.success(output)
     }
 
 

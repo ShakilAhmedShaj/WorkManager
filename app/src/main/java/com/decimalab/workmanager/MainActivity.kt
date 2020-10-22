@@ -31,17 +31,26 @@ class MainActivity : AppCompatActivity() {
             .setRequiredNetworkType(NetworkType.NOT_ROAMING)
             .build()
 
+        val clearFileWorker = OneTimeWorkRequestBuilder<FileClearWorker>()
+            .build()
+
         val downloadRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setConstraints(constraints)
             .build()
 
         val workManager = WorkManager.getInstance(this)
-        workManager.enqueue(downloadRequest)
+        workManager.beginWith(clearFileWorker)
+            .then(downloadRequest)
+            .enqueue()
 
         workManager.getWorkInfoByIdLiveData(downloadRequest.id).observe(this, Observer { info ->
             if (info.state.isFinished) {
-                val imagePath = File(externalMediaDirs.first(), "shajt3ch.jpg")
-                displayImage(imagePath.absolutePath)
+                val imagePath = info.outputData.getString("image_path")
+
+                if (!imagePath.isNullOrEmpty()) {
+                    displayImage(imagePath)
+                }
+
             }
         })
     }
